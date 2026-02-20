@@ -370,8 +370,8 @@ const ActionButton = ({ icon, label, onClick, active }) => (
     <button onClick={onClick}
         className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${active ? 'text-primary-400' : 'text-gray-400 hover:text-white'}`}>
         {icon}
-        <span className="text-xs font-medium">{label}</span>
-    </button>
+        <span className="text-xs font-medium">{label}</span>/
+    </button
 );
 
 export default StreamingAnimeServerSelector;
