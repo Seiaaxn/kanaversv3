@@ -121,6 +121,9 @@ const StreamingAnime = () => {
                     selectedServer={selectedServer}
                     downloads={downloads}
                     onServerSelect={handleServerChange}
+                    animeTitle={anime?.title || ''}
+                    episodeTitle={currentEpisode?.title || `Episode ${currentEpisode?.number || ''}`}
+                    episodeUrl={episodeUrl || ''}
                 />
 
                 <StreamingAnimeEpisodesGrid
@@ -136,3 +139,4 @@ const StreamingAnime = () => {
 };
 
 export default StreamingAnime;
+                                            
