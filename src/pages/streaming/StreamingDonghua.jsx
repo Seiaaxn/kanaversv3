@@ -108,6 +108,9 @@ const StreamingDonghua = () => {
                     streams={streams}
                     selectedServer={selectedServer}
                     onServerSelect={handleServerChange}
+                    donghuaTitle={donghua?.title || ''}
+                    episodeTitle={currentEpisode?.title || `Episode ${currentEpisode?.number || ''}`}
+                    episodeUrl={episodeUrl || ''}
                 />
 
                 <StreamingDonghuaRelatedEpisodes
@@ -123,4 +126,4 @@ const StreamingDonghua = () => {
 };
 
 export default StreamingDonghua;
-                  
+        
