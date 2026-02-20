@@ -192,3 +192,4 @@ const DetailAnime = () => {
 };
 
 export default DetailAnime;
+                
