@@ -26,27 +26,7 @@ body {
   background-color: var(--bg);
   color: var(--text);
   overflow-x: hidden;
-  max-width: 480px;
-  margin: 0 auto;
   position: relative;
-}
-
-/* Desktop blocker overlay */
-.desktop-blocker {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: #070711;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 16px;
-}
-
-@media (min-width: 481px) {
-  .desktop-blocker { display: flex; }
-  body > #root { display: none; }
 }
 
 /* ===== SCROLLBAR ===== */
