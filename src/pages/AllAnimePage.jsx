@@ -103,3 +103,4 @@ const AllAnimePage = () => {
 };
 
 export default AllAnimePage;
+        
