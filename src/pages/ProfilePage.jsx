@@ -15,6 +15,8 @@ const ProfilePage = () => {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
   const [editingXP, setEditingXP] = useState(null); // userId
+  const [adminTab, setAdminTab] = useState('users'); // 'users' | 'reports'
+  const [reports, setReports] = useState([]);
   const [xpInput, setXpInput] = useState('');
 
   const refreshUser = () => { const u=getUser(); setUser(u); };
@@ -43,7 +45,11 @@ const ProfilePage = () => {
     reader.readAsDataURL(file);
   };
 
-  const openAdmin = () => { setAllUsers(getStoredUsers()); setShowAdminPanel(true); };
+  const openAdmin = () => {
+    setAllUsers(getStoredUsers());
+    try { setReports(JSON.parse(localStorage.getItem('animeplay_reports') || '[]')); } catch {}
+    setShowAdminPanel(true);
+  };
 
   const handleRoleChange = (userId, newRole) => {
     updateUserById(userId, { role: newRole });
@@ -82,7 +88,7 @@ const ProfilePage = () => {
     );
   }
 
-  const xpInfo = getLevelInfo(user.xp||0);
+  const xpInfo = getLevelInfo(user.xp||0, user.role);
   const levelData = xpInfo.current;
   const role = user.role||'user';
   const roleInfo = ROLES[role]||ROLES.user;
@@ -150,8 +156,8 @@ const ProfilePage = () => {
 
           <div className="flex items-center gap-2 flex-wrap justify-center">
             <span className={`level-badge ${roleInfo.className}`}>{roleInfo.icon} {roleInfo.label}</span>
-            <span className="level-badge" style={{background:levelData.gradient,color:'white'}}>
-              Lv.{levelData.level} {levelData.name}
+            <span className="level-badge" style={{background:levelData.gradient,color:'white',animation:xpInfo.isUnlimited?'shimmer 2s linear infinite':undefined}}>
+              {xpInfo.isUnlimited ? '∞ God' : `Lv.${levelData.level} ${levelData.name}`}
             </span>
           </div>
         </div>
@@ -166,8 +172,8 @@ const ProfilePage = () => {
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs font-bold" style={{color:levelData.color}}>{levelData.name}</p>
-              {xpInfo.next&&<p className="text-[10px]" style={{color:'var(--muted)'}}>→ Lv.{xpInfo.next.level}</p>}
+              <p className="text-xs font-bold" style={{color:levelData.color,textShadow:xpInfo.isUnlimited?'0 0 8px #ffd700':undefined}}>{xpInfo.isUnlimited?'∞ God':levelData.name}</p>
+              {xpInfo.next&&!xpInfo.isUnlimited&&<p className="text-[10px]" style={{color:'var(--muted)'}}>→ Lv.{xpInfo.next.level}</p>}
             </div>
           </div>
           <div className="xp-bar"><div className="xp-fill" style={{width:`${xpInfo.progress}%`}}/></div>
@@ -221,13 +227,58 @@ const ProfilePage = () => {
       {showAdminPanel&&(
         <div className="fixed inset-0 z-50 flex flex-col" style={{background:'var(--bg)'}}>
           <div className="flex items-center justify-between px-4 py-3 glass" style={{borderBottom:'1px solid var(--border)'}}>
-            <h2 className="text-sm font-bold text-white">👑 Admin Panel</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-sm font-bold text-white">👑 Admin Panel</h2>
+              <div className="flex gap-1">
+                {[['users','👥 Users'],['reports','🚩 Laporan']].map(([t,l])=>(
+                  <button key={t} onClick={()=>setAdminTab(t)}
+                    className="px-2 py-1 rounded-lg text-xs font-bold transition-all"
+                    style={{background:adminTab===t?'rgba(124,109,250,0.3)':'transparent',color:adminTab===t?'#7c6dfa':'var(--muted)'}}>
+                    {l}{t==='reports'&&reports.filter(r=>r.status==='pending').length>0&&
+                      <span className="ml-1 px-1 py-0 rounded-full text-[9px] bg-red-500 text-white">{reports.filter(r=>r.status==='pending').length}</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
             <button onClick={()=>setShowAdminPanel(false)} style={{color:'var(--muted)'}}><X size={18}/></button>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            <p className="text-xs font-bold mb-3" style={{color:'var(--muted)'}}>SEMUA PENGGUNA ({allUsers.length})</p>
+            {adminTab==='reports' ? (
+            <>
+              <p className="text-xs font-bold mb-3" style={{color:'var(--muted)'}}>LAPORAN MASALAH ({reports.length})</p>
+              {reports.length===0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p className="text-3xl mb-2">🚩</p><p className="text-sm">Belum ada laporan</p>
+                </div>
+              ) : reports.map((r,i)=>(
+                <div key={i} className="p-3 rounded-2xl mb-2" style={{background:'var(--card)',border:`1px solid ${r.status==='pending'?'rgba(250,109,109,0.3)':'var(--border)'}`}}>
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <p className="text-xs font-bold text-white">{r.reasonLabel||r.reason}</p>
+                    <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${r.status==='pending'?'bg-red-500/20 text-red-400':'bg-green-500/20 text-green-400'}`}>
+                      {r.status==='pending'?'Pending':'Selesai'}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-gray-400 truncate">{r.animeTitle||r.donghuaTitle} — {r.episodeTitle}</p>
+                  {r.detail&&<p className="text-[10px] mt-1" style={{color:'var(--muted)'}}>{r.detail}</p>}
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-[9px]" style={{color:'var(--muted)'}}>oleh {r.reportedBy} · {new Date(r.createdAt).toLocaleDateString('id')}</p>
+                    {r.status==='pending'&&(
+                      <button onClick={()=>{
+                        const updated=[...reports];updated[i]={...updated[i],status:'resolved'};
+                        setReports(updated);localStorage.setItem('animeplay_reports',JSON.stringify(updated));
+                      }} className="text-[10px] px-2 py-1 rounded-lg font-bold" style={{background:'rgba(109,250,188,0.15)',color:'#6dfabc'}}>
+                        ✓ Tandai Selesai
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            <>
+          <p className="text-xs font-bold mb-3" style={{color:'var(--muted)'}}>SEMUA PENGGUNA ({allUsers.length})</p>
             {allUsers.map(u=>{
-              const uXP=getLevelInfo(u.xp||0);const uRole=u.role||'user';
+              const uRole=u.role||'user';const uXP=getLevelInfo(u.xp||0, uRole);
               return (
                 <div key={u.id} className="p-4 rounded-2xl" style={{background:'var(--card)',border:'1px solid var(--border)'}}>
                   <div className="flex items-center gap-3 mb-3">
@@ -241,7 +292,7 @@ const ProfilePage = () => {
                       <p className="text-[10px] truncate" style={{color:'var(--muted)'}}>{u.email}</p>
                     </div>
                     <span className="level-badge text-[9px]" style={{background:uXP.current.gradient,color:'white'}}>
-                      Lv.{uXP.current.level}
+                      {uXP.isUnlimited ? '∞' : `Lv.${uXP.current.level}`}
                     </span>
                   </div>
 
@@ -281,6 +332,8 @@ const ProfilePage = () => {
                 </div>
               );
             })}
+            </>
+          )}
           </div>
         </div>
       )}
@@ -304,3 +357,4 @@ const ProfilePage = () => {
 };
 
 export default ProfilePage;
+      
