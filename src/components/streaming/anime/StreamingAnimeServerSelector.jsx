@@ -368,10 +368,11 @@ const StreamingAnimeActionBar = ({
 
 const ActionButton = ({ icon, label, onClick, active }) => (
     <button onClick={onClick}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200 ${active ? 'bg-primary-400/15 text-primary-400' : 'bg-dark-surface text-gray-400 hover:bg-dark-card hover:text-white'}`}>
+        className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${active ? 'text-primary-400' : 'text-gray-400 hover:text-white'}`}>
         {icon}
-        <span className="text-sm font-medium">{label}</span>
+        <span className="text-xs font-medium">{label}</span>
     </button>
 );
 
-export default StreamingAnimeActionBar;
+export default StreamingAnimeServerSelector;
+    
