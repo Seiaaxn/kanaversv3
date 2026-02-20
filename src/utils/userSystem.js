@@ -38,7 +38,7 @@ const BASE_LEVEL_DATA = [
   {level:20,name:'Emperor',minXP:620000,color:'#fff',gradient:'linear-gradient(135deg,#ffd700,#ff6b35,#8b5cf6)'},
 ];
 
-export const MAX_LEVEL = 999999;
+export const MAX_LEVEL = 99999999999;
 
 export const generateLevel = (level) => {
   if (level <= 20) return BASE_LEVEL_DATA[level-1];
@@ -50,7 +50,29 @@ export const generateLevel = (level) => {
 
 export const LEVELS = Array.from({length:100},(_,i)=>generateLevel(i+1));
 
-export const getLevelInfo = (xp) => {
+// Level khusus untuk admin — unlimited/god
+export const ADMIN_LEVEL = {
+  level: '∞',
+  name: 'UNLIMITED',
+  minXP: 0,
+  color: '#fff',
+  gradient: 'linear-gradient(135deg,#ffd700,#ff6b35,#fa6d9a,#7c6dfa,#6dfabc)',
+  isUnlimited: true,
+};
+
+export const getLevelInfo = (xp, role) => {
+  // Admin = unlimited level, tidak terikat XP
+  if (role === 'admin') {
+    return {
+      current: ADMIN_LEVEL,
+      next: null,
+      xpInLevel: xp,
+      xpToNext: 0,
+      progress: 100,
+      isUnlimited: true,
+    };
+  }
+
   let levelNum = 1;
   for (let i=LEVELS.length-1;i>=0;i--) {
     if (xp>=LEVELS[i].minXP){levelNum=LEVELS[i].level;break;}
@@ -65,7 +87,7 @@ export const getLevelInfo = (xp) => {
   const xpInLevel=xp-current.minXP;
   const xpToNext=next?next.minXP-current.minXP:0;
   const progress=next?Math.min((xpInLevel/xpToNext)*100,100):100;
-  return {current,next,xpInLevel,xpToNext,progress};
+  return {current,next,xpInLevel,xpToNext,progress,isUnlimited:false};
 };
 
 export const ROLES = {
@@ -109,8 +131,8 @@ export const updateUserById = (userId,updates) => {
 export const addXP = (amount,reason='') => {
   const user=getUser();if(!user)return null;
   const newXP=(user.xp||0)+amount;
-  const oldLevel=getLevelInfo(user.xp||0).current.level;
-  const newLevel=getLevelInfo(newXP).current.level;
+  const oldLevel=getLevelInfo(user.xp||0, user.role).current.level;
+  const newLevel=getLevelInfo(newXP, user.role).current.level;
   updateUser({xp:newXP});
   return {newXP,amount,reason,leveledUp:newLevel>oldLevel,newLevel};
 };
