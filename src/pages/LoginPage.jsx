@@ -90,12 +90,6 @@ const LoginPage = () => {
           ))}
         </div>
 
-        {/* Admin hint */}
-        {tab==='login'&&(
-          <div className="px-4 py-2.5 mb-3 rounded-2xl text-xs" style={{background:'rgba(124,109,250,0.08)',border:'1px solid rgba(124,109,250,0.15)'}}>
-            <span style={{color:'#7c6dfa'}}>👑 Admin: </span><span style={{color:'var(--muted)'}}>username: <strong style={{color:'white'}}>admin</strong> | password: <strong style={{color:'white'}}>admin123</strong></span>
-          </div>
-        )}
 
         {error&&(
           <div className="flex items-center gap-2.5 px-4 py-3 mb-4 rounded-2xl" style={{background:'rgba(250,109,154,0.1)',border:'1px solid rgba(250,109,154,0.2)'}}>
@@ -153,3 +147,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+                                                
